@@ -1,0 +1,107 @@
+<div class="top-section m-4">
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <h1 class="text-danger">Coronavirus monitor</h1>
+    </div>
+    <div class="col-md-6">
+      <h3 class="text-center">World Statistics</h3>
+      <h4 class="text-center">Effected {{countries}} countries</h4>
+      <div class="row text-md-center">
+        <div class="col-6">
+          Cases: {{casses | number}}
+        </div>
+        <div class="col-6">
+          Deaths: {{deaths | number}}
+        </div>
+        <div class="col-6">
+          Recovered: {{recover | number }}
+        </div>
+        <div class="col-6">
+          Active: {{active | number }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- Top Section -->
+<!-- Input Section -->
+<div class="input-section">
+<div class="container">
+  <h2 class="text-center">Which country report do you want?</h2>
+  <div class="row justify-content-center">
+    <div class="col-md-9 col-12">
+      <select class="form-control form-control-lg" [(ngModel)]="country" (change)="getCountryStat()">
+        <option *ngFor="let country of countriesNames">{{country || 'India'}}</option>
+      </select>
+    </div>
+  </div>
+</div>
+</div>
+<!-- Input Section End -->
+
+<!-- Country wise Report -->
+<div class="report m-5">
+<h2 class="text-center p-2">Country: {{country}}</h2>
+<div *ngIf="countryStat" class="container">
+  <div class="row text-md-center">
+    <div class="col-md-3 col-6 p-2">
+      Casses: {{countryStat.cases}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      Deaths:  {{countryStat.deaths}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      Recover: {{countryStat.total_recovered}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      Serious Critical: {{countryStat.serious_critical}}
+    </div>
+  </div>
+
+  <div class="row text-md-center">
+    <div class="col-md-3 col-6 p-2">
+      New Casses: {{countryStat.new_cases}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      New Deaths: {{countryStat.new_deaths}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      Total Tests: {{countryStat.total_tests}}
+    </div>
+    <div class="col-md-3 col-6 p-2">
+      Total Cases 1m: {{countryStat.total_cases_per_1m_population}}
+    </div>
+  </div>
+</div>
+</div>
+<!-- Country wise Report -->
+<div *ngIf="isChartLoaded" class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="text-center">Historycal Datas</h3>
+      <canvas class="bg-chart"
+          baseChart
+          [chartType]="'bar'"
+          [datasets]="chartData"
+          [labels]="chartLabels"
+          [options]="chartOptions"
+          legend="true"
+          (chartClick)="onChartClick($event)">
+      </canvas>
+    </div>
+    <div *ngIf="isPieChartLoaded" class="col-md-6">
+      <h3 class="text-center">Global Statictics</h3>
+      <canvas class="bg-chart"
+          baseChart
+          [chartType]="'doughnut'"
+          [datasets]="pieData"
+          [labels]="pieLabels"
+          [options]="pieOptions"
+          [legend]="false"
+          (chartClick)="onChartClick($event)">
+      </canvas>
+    </div>
+  </div>
+</div>
