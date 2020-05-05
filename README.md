@@ -7,7 +7,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 After download this project Run `npm install` for dependencies of this. project.
 
 ## Setup API Key in environment files
-Setup API keys in the environment file. Using API Host is http://coronavirus-monitor.p.rapidapi.com
+Setup API keys in the environment file. Using API Host is http://rapidapi.com
 
 ## Development server
 
