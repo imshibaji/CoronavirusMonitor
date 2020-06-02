@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import { HttpClient, HttpHeaders, HttpHeaderResponse } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-
+import { environment } from 'src/environments/environment';
+import { HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CoronaVirusService {
+export class CoronaStatusService {
   options = {
     headers: new HttpHeaders({
       "x-rapidapi-host": environment.apiHost,
@@ -17,60 +17,43 @@ export class CoronaVirusService {
 
   constructor(private http: HttpClient) { }
 
-  getData(){
-    return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php', this.options).pipe(map((datas:any) => {
-      // console.log(datas);
-
-      const stats = datas.countries_stat;
-      const update_time = datas.statistic_taken_at;
-
-      let totalCasees = 0;
-      let totalDeaths = 0;
-      let totalRecover = 0;
-      let totalActive = 0;
-      let totalCountries = stats.length;
-
-      // console.log(stats);
-
-      for (const stat of stats) {
-        // console.log(stat);
-        
-        totalCasees += parseInt(stat.cases.replace(/,/g, "")) || 0;
-        totalDeaths += parseInt(stat.deaths.replace(/,/g, "")) || 0;
-        totalRecover += parseInt(stat.total_recovered.replace(/,/g, "")) || 0;
-        totalActive += parseInt(stat.active_cases.replace(/,/g, "")) || 0;
-      }
-
-      return { stats: [totalCasees, totalDeaths, totalRecover, totalActive, totalCountries],  update: update_time };
-
-    }));
+  getAllStat(){
+    return this.http.get( environment.apiUrl , this.options);
   }
 
   getCountries(){
     return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/affected.php', this.options)
-    .pipe(map((datas: any)=> {
-      // console.log(datas.affected_countries);
-      
-      return datas.affected_countries;
-    }));
+      .pipe(map((datas:any) =>{
+        const stats = datas.affected_countries;
+        // let countries = [];
+
+        // for (const stat of stats){
+        //   countries.push(stat.country_name);
+        // }
+
+        return stats;
+      }));
   }
 
-  getCountryData(country){
-    return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php', this.options)
-    .pipe(map((data: any)=>{
-
-      const stats = data.countries_stat;
-
-      const status = stats.filter((stat: any)=>{
-        return (stat.country_name.toLowerCase() == country.toLowerCase());
-      });
-
-      // console.log(status[0]);
+  getMaskRules(){
+    try {
+      const options = {
+        headers: new HttpHeaders({
+          "x-rapidapi-host": environment.apiHost,
+          "x-rapidapi-key": environment.apiKey
+        }),
+        // responseType: 'text',
+        // observe: 'string'
+      };
+      const img = this.http.get<any>('https://coronavirus-monitor.p.rapidapi.com/coronavirus/random_masks_usage_instructions.php', options);
+      return img;
       
-
-      return status[0];
-    }));
+    } catch (error) {
+      
+    }
   }
+
+  
 
   getTotal(){
     return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php', this.options)
@@ -104,7 +87,24 @@ export class CoronaVirusService {
     ));
   }
 
-  getHistoricalData(country){
+  getStatByCountry(country){
+
+    return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php', this.options)
+    .pipe(map(
+      (datas:any) => {
+
+        const stats = datas.countries_stat;
+         // console.log(stats);
+        const status = stats.filter( (stat: any) => {
+          return stat.country_name.toLowerCase() == country.toLowerCase()
+        })
+
+        return status[0];
+      }
+    ));
+  }
+
+  getHistoryChart(country){
     const options = {
       headers: new HttpHeaders({
         "x-rapidapi-host": environment.apiHost,
@@ -114,6 +114,19 @@ export class CoronaVirusService {
         "country": country
       }
     };
+
+    // id: "376"
+    // country_name: "India"
+    // total_cases: "143"
+    // new_cases: "14"
+    // active_cases: "126"
+    // total_deaths: "3"
+    // new_deaths: "1"
+    // total_recovered: "14"
+    // serious_critical: ""
+    // region: null
+    // total_cases_per1m: "0.1"
+    // record_date: "2020-03-17 21:00:05.485"
 
     return this.http.get('https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_particular_country.php', options)
     .pipe(map((datas: any) => {
@@ -134,9 +147,9 @@ export class CoronaVirusService {
         const lastDate = stats[i-1].record_date.split(" ")[0];
         // console.log(date, lastDate);
         if(date != lastDate){
-          casses.push( parseInt(stats[i].total_cases.replace(/,/g, "") || 0));
-          deaths.push( parseInt(stats[i].total_deaths.replace(/,/g, "") || 0));
-          recover.push( parseInt(stats[i].total_recovered.replace(/,/g, "") || 0));
+          casses.push( parseInt(stats[i].total_cases.replace(/,/g, "")));
+          deaths.push( parseInt(stats[i].total_deaths.replace(/,/g, "")));
+          recover.push( parseInt(stats[i].total_recovered.replace(/,/g, "")));
           dates.push(stats[i].record_date.split(" ")[0]);
         }
       }

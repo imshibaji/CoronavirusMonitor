@@ -1,37 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { CoronaVirusService } from './corona-virus.service';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { CoronaStatusService } from './corona-status.service';
+import {Observable} from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpHeaderResponse, HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  casses: number;
-  deaths: number;
-  recover: number;
-  active: number;
-  countries: number;
-  countriesNames: string[];
-
-  country: string;
-  countryStat: any;
-
-  update: string;
-  total: number[];
-
-  // Barchart Inputs
   isChartLoaded = false;
-  chartData = [];
-  chartLabels = [];
+  allStats: object[];
+  image: any;
+  update: string;
+  country: string;
+  counties: string[];
+  cstat: any;
+  total: number[];
+  datas: Observable<any>;
+
+  // chart
   chartOptions = {
     responsive: true,
   };
+  chartData = [];
+  chartLabels = [];
 
-  // Pie Chart Inputs
-  isPieChartLoaded = false;
-  pieData = [];
-  pieLabels = [];
+  pieData =[];
+  pieLabels =[];
   pieOptions = {
     responsive: true,
     legend: {
@@ -41,42 +38,54 @@ export class AppComponent implements OnInit {
     }
   };
 
-  constructor(private cvs: CoronaVirusService){
+  onChartClick(event) {
+    console.log(event);
+  }
+  // chart
+
+  constructor(private css: CoronaStatusService, private sanitizer: DomSanitizer){
     this.country = 'India';
+    
+
+    // this.css.getMaskRules().subscribe((data)=> {
+
+      // this.image = this.sanitizer.bypassSecurityTrustResourceUrl('data:image/png;base64,'+data);
+      
+      // let objectURL = 'data:image/jpeg;base64,' + data.image;
+    // });
   }
 
   ngOnInit(){
-    this.cvs.getData().subscribe(datas => {
-      // console.log(datas);
-      
-      this.casses = datas.stats[0];
-      this.deaths = datas.stats[1];
-      this.recover = datas.stats[2];
-      this.active = datas.stats[3];
-      this.countries = datas.stats[4];
-    });
-
-    this.getCountryStat();
-    
+    this.getData();
     this.getCountries();
-
-    this.getGlobalStats();
-    
+    this.onChange();
+    // this.getHistory();
   }
 
-  getCountries(){
-    this.cvs.getCountries().subscribe((datas: any)=> {
-      // console.log(datas);
-      this.countriesNames = datas;
+  onChange(){
+    this.datas = this.css.getStatByCountry(this.country || 'india');
+    this.datas.subscribe(stats => {
+      this.cstat = stats;
     });
+    this.getHistory();
   }
 
-  getGlobalStats(){
-    this.cvs.getTotal().subscribe(stats => {
+  onClickCountry(country){
+    this.country = country;
+    this.onChange();
+  }
+  
+  getData(){
+    this.datas = this.css.getTotal();
+    this.datas.subscribe(stats => {
       this.update = stats.lastUpdate;
       this.total = stats.total;
-      
 
+      // console.log(this.total);
+
+      // const totalCount =  this.total[1] + this.total[3] + this.total[5] + this.total[6];
+
+      // const casses =  Math.round(this.total[1] * 100 / totalCount);
       const casses = this.total[1];
       const deaths =  Math.round(this.total[3] * 100 / casses);
       const recovered =  Math.round(this.total[5] * 100 / casses);
@@ -102,20 +111,23 @@ export class AppComponent implements OnInit {
         'Active Casses'
       ];
 
-      this.isPieChartLoaded = true;
+    });
+    this.css.getAllStat().subscribe((stats:any) => {
+      // console.log(stats);
+      this.allStats = stats.countries_stat;
     });
   }
 
-  getCountryStat(){
-    this.cvs.getCountryData(this.country).subscribe((data: any)=>{
-      this.countryStat = data;
+  getCountries(){
+    this.datas = this.css.getCountries();
+    this.datas.subscribe(datas => {
+      this.counties = datas;
     });
-
-    this.getHistory(this.country);
   }
 
-  getHistory(country){
-    this.cvs.getHistoricalData(country).subscribe((datas: any)=>{
+  getHistory(){
+    this.css.getHistoryChart(this.country || 'india').subscribe(datas =>{
+
       this.chartOptions = {
         responsive: true
       };
@@ -124,13 +136,11 @@ export class AppComponent implements OnInit {
         { data: datas.deaths, label: 'Deaths', backgroundColor: 'firebrick' },
         { data: datas.recover, label: 'Recovered', backgroundColor: 'forestgreen' }
       ];
-      this.chartLabels = datas.dates; 
-      
+      this.chartLabels = datas.dates;
+
       this.isChartLoaded = true;
+      // console.log(datas);
     });
   }
-
-  onChartClick(ev){
-    console.log(ev);
-  }
+    
 }

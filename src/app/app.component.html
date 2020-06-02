@@ -1,107 +1,157 @@
-<div class="top-section m-4">
-<div class="container">
-  <div class="row">
-    <div class="col-md-6">
-      <h1 class="text-danger">Coronavirus monitor</h1>
-    </div>
-    <div class="col-md-6">
-      <h3 class="text-center">World Statistics</h3>
-      <h4 class="text-center">Effected {{countries}} countries</h4>
-      <div class="row text-md-center">
-        <div class="col-6">
-          Cases: {{casses | number}}
+<div class="container-fluid main-view">
+    <div class="row">
+        <!-- Left Details -->
+        <div class="col-md-10 p-0">
+            <div class="quick-view">
+                <div class="row">
+                    <div class="col-md">
+                        <div class="embed-responsive embed-responsive-16by9 m-md-3">
+                            <iframe class="embed-responsive-item"
+                            src="https://www.youtube.com/embed/mlr6GerFI4U?controls=0" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen></iframe>
+                        </div>
+                        <!-- <img [src]="image" class="img-fluid" alt="WHO Guidelines"> -->
+                    </div>
+                    <div class="col-md">
+                        <!-- Update -->
+                        <div class="py-1">
+                            <h1 class="col text-center">Live Coronavirus Monitor</h1>
+                        </div>
+                        <!-- Update -->
+                        <!-- Statistics -->
+                        <div *ngIf="total" class="py-1">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="text-center">
+                                        <h4 class="text-primary">Last Updates:</h4> 
+                                        <h5>{{ update }}</h5>
+                                    </div>
+                                    <h3 class="text-center text-primary">World Statistics :</h3>
+                                    <h5 class="text-center">Total Effected <span class="text-info">{{ total[0] }} </span>Countries</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <canvas class="bg-chart"
+                                        baseChart
+                                        [chartType]="'doughnut'"
+                                        [datasets]="pieData"
+                                        [labels]="pieLabels"
+                                        [options]="pieOptions"
+                                        [legend]="false"
+                                        (chartClick)="onChartClick($event)">
+                                    </canvas>
+                                </div>
+                            </div>
+                            <div class="row pt-2">
+                                <div class="col-6 text-center">
+                                    <h4>Cases: <span class="text-warning">{{ total[1] | number }}</span></h4>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h4>New Casses: <span class="text-warning">{{ total[2] | number }} </span></h4>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h4>Deaths: <span class="text-danger">{{ total[3] | number}}</span></h4>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h4>New Deaths: <span class="text-danger">{{ total[4] | number}}</span></h4>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h4>Recovered: <span class="text-success">{{total[5] | number}}</span></h4>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h4>Active: <span class="text-info">{{ total[6] | number}} </span></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Statistics -->
+                    </div>
+                </div>
+            </div>
+            <!-- Top Indexed -->
+            <!-- Bottom Details -->
+            <div class="quick-view">
+                <!-- Data Details -->
+                <div *ngIf="cstat" class="row m-0 justify-content-center">
+                    <div class="col-12 p-2 box-head">
+                        <div class="row">
+                            <h3 class="col-md text-center">Country: {{ cstat.country_name }}</h3>
+                            <div class="col-md-9">
+                                <!-- <input class="form-control form-control-lg" [(ngModel)]="country" (change)="onChange()"> -->
+                                <select class="form-control form-control-lg" [(ngModel)]="country" (change)="onChange()">
+                                    <option *ngFor="let country of counties">{{country}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-md-center text-left box-body">
+                        <div class="row">
+                            <div class="col-md">
+                                <div *ngIf="isChartLoaded" class="col p-3 p-md-2">
+                                    <h4 class="text-center">Historycal data</h4>
+                                    <canvas class="bg-chart"
+                                        baseChart
+                                        [chartType]="'bar'"
+                                        [datasets]="chartData"
+                                        [labels]="chartLabels"
+                                        [options]="chartOptions"
+                                        legend="true"
+                                        (chartClick)="onChartClick($event)">
+                                    </canvas>
+                                </div>
+                            </div>
+                            <div class="col-md p-3 p-md-2">
+                                <h4 class="text-center">Current data</h4>
+                                <div class="row pt-3 p-md-5">
+                                    <div class="col-6">
+                                        <p class="my-text">Cases: <span class="text-warning">{{ cstat.cases }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">New Cases: <span class="text-warning">{{ cstat.new_cases }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">Deaths:  <span class="text-danger">{{ cstat.deaths }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">New Deaths: <span class="text-danger">{{ cstat.new_deaths }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">Serious Critical: <span class="text-info">{{ cstat.serious_critical }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">Recovered: <span class="text-success">{{ cstat.total_recovered }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">Active Cases: <span class="text-primary">{{ cstat.active_cases }}</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="my-text">Per 1M Ratio: <span class="text-secondary">{{ cstat.total_cases_per_1m_population }}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-6">
-          Deaths: {{deaths | number}}
+        <!-- Left Details -->
+        <!-- Right All Cuntries -->
+        <div class="col-md p-0 all-countries">
+            <div *ngFor="let c of allStats; index as i">
+                <div *ngIf="c.country_name != ''" class="c-view">
+                    <div (click)="onClickCountry(c.country_name)" style="cursor:help">
+                        <h4 class="text-center m-1">{{ c.country_name }}</h4>
+                        <div class="p-1">
+                            <p class="text-center">Casses | Deaths | Recovered</p>
+                            <p class="text-center">
+                                <span class="text-info">{{ c.cases }}</span> | 
+                                <span class="text-danger">{{ c.deaths }}</span> | 
+                                <span class="text-success">{{ c.total_recovered }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-6">
-          Recovered: {{recover | number }}
-        </div>
-        <div class="col-6">
-          Active: {{active | number }}
-        </div>
-      </div>
     </div>
-  </div>
-</div>
-</div>
-<!-- Top Section -->
-<!-- Input Section -->
-<div class="input-section">
-<div class="container">
-  <h2 class="text-center">Which country report do you want?</h2>
-  <div class="row justify-content-center">
-    <div class="col-md-9 col-12">
-      <select class="form-control form-control-lg" [(ngModel)]="country" (change)="getCountryStat()">
-        <option *ngFor="let country of countriesNames">{{country || 'India'}}</option>
-      </select>
-    </div>
-  </div>
-</div>
-</div>
-<!-- Input Section End -->
-
-<!-- Country wise Report -->
-<div class="report m-5">
-<h2 class="text-center p-2">Country: {{country}}</h2>
-<div *ngIf="countryStat" class="container">
-  <div class="row text-md-center">
-    <div class="col-md-3 col-6 p-2">
-      Casses: {{countryStat.cases}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      Deaths:  {{countryStat.deaths}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      Recover: {{countryStat.total_recovered}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      Serious Critical: {{countryStat.serious_critical}}
-    </div>
-  </div>
-
-  <div class="row text-md-center">
-    <div class="col-md-3 col-6 p-2">
-      New Casses: {{countryStat.new_cases}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      New Deaths: {{countryStat.new_deaths}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      Total Tests: {{countryStat.total_tests}}
-    </div>
-    <div class="col-md-3 col-6 p-2">
-      Total Cases 1m: {{countryStat.total_cases_per_1m_population}}
-    </div>
-  </div>
-</div>
-</div>
-<!-- Country wise Report -->
-<div *ngIf="isChartLoaded" class="container">
-  <div class="row">
-    <div class="col-md-6">
-      <h3 class="text-center">Historycal Datas</h3>
-      <canvas class="bg-chart"
-          baseChart
-          [chartType]="'bar'"
-          [datasets]="chartData"
-          [labels]="chartLabels"
-          [options]="chartOptions"
-          legend="true"
-          (chartClick)="onChartClick($event)">
-      </canvas>
-    </div>
-    <div *ngIf="isPieChartLoaded" class="col-md-6">
-      <h3 class="text-center">Global Statictics</h3>
-      <canvas class="bg-chart"
-          baseChart
-          [chartType]="'doughnut'"
-          [datasets]="pieData"
-          [labels]="pieLabels"
-          [options]="pieOptions"
-          [legend]="false"
-          (chartClick)="onChartClick($event)">
-      </canvas>
-    </div>
-  </div>
 </div>
